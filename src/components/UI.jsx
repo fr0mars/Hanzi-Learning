@@ -288,7 +288,17 @@ export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart,
                     </div>
                     <div className="relative z-10 text-center md:text-left flex-1">
                         <h2 className="text-3xl font-bold text-white mb-2">{user.username} {userFaction && <span className="ml-2">{userFaction.icon}</span>}</h2>
-                        <div className="inline-flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full border border-white/10 text-sm text-slate-300 backdrop-blur-md"><span>{userFaction ? userFaction.name : "Disciple sans faction"}</span></div>
+                        <div className="inline-flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full border border-white/10 text-sm text-slate-300 backdrop-blur-md mb-4"><span>{userFaction ? userFaction.name : "Disciple sans faction"}</span></div>
+
+                        <div className="w-full max-w-md mx-auto md:mx-0">
+                            <div className="flex justify-between text-xs text-slate-300 mb-1 font-bold uppercase tracking-wider">
+                                <span>Progression Niveau {user.level}</span>
+                                <span>{hskStats[user.level]?.percent || 0}%</span>
+                            </div>
+                            <div className="w-full bg-black/30 rounded-full h-3 border border-white/10 overflow-hidden backdrop-blur-sm">
+                                <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000 shadow-[0_0_10px_rgba(52,211,153,0.5)]" style={{ width: `${hskStats[user.level]?.percent || 0}%` }}></div>
+                            </div>
+                        </div>
                     </div>
                     <div className="absolute -top-20 -right-20 opacity-20 pointer-events-none mix-blend-overlay"><Flame size={400} /></div>
                 </div>
