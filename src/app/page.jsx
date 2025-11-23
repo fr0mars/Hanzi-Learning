@@ -1,0 +1,96 @@
+'use client';
+import React, { useState, useEffect } from 'react';
+import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail } from '@/components/UI';
+
+export default function Home() {
+  const [view, setView] = useState('dashboard')
+  const [data, setData] = useState(null);
+  const [sessionItems, setSessionItems] = useState([]);
+  const [levelItems, setLevelItems] = useState([]);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isPractice, setIsPractice] = useState(false);
+
+  const refreshDashboard = async () => {
+    try {
+        const res = await fetch('/api/study?action=dashboard');
+        if (res.ok) setData(await res.json());
+        setView('dashboard');
+    } catch (e) { console.error(e); }
+  };
+
+  useEffect(() => { refreshDashboard(); }, []);
+
+  const startSession = async (type) => {
+    setIsPractice(false);
+    const res = await fetch(`/api/study?action=${type}`);
+    const items = await res.json();
+    if (items.length > 0) {
+        setSessionItems(items);
+        setView(type);
+    } else {
+        alert("Rien à étudier pour le moment !");
+    }
+  };
+
+  const openLevel = async (level) => {
+      setCurrentLevel(level);
+      const res = await fetch(`/api/study?action=level_items&level=${level}`);
+      const items = await res.json();
+      setLevelItems(items);
+      setView('level_detail');
+  };
+
+  const startPractice = (items) => {
+      setSessionItems(items);
+      setIsPractice(true);
+      setView('reviews'); // On utilise l'interface de review mais en mode practice
+  };
+
+  const handleReset = async () => {
+    if (confirm("Êtes-vous sûr de vouloir tout effacer ?")) {
+        await fetch('/api/study?action=reset', { method: 'POST' });
+        window.location.reload();
+    }
+  };
+
+  if (!data) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Chargement...</div>;
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+      {view === 'dashboard' && (
+        <Dashboard 
+          user={data.user} 
+          lessonsCount={data.lessonsCount} 
+          reviewsCount={data.reviewsCount}
+          hskStats={data.hskStats || {}}
+          onStart={startSession}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenLevel={openLevel}
+        />
+      )}
+
+      {view === 'level_detail' && (
+          <LevelDetail 
+            level={currentLevel} 
+            items={levelItems} 
+            onBack={() => setView('dashboard')}
+            onStartPractice={startPractice}
+          />
+      )}
+
+      {(view === 'lessons' || view === 'reviews') && (
+        view === 'lessons' ? 
+        <LessonSession items={sessionItems} onComplete={refreshDashboard} /> :
+        <ReviewSession items={sessionItems} onComplete={refreshDashboard} isPractice={isPractice} />
+      )}
+
+      {showSettings && (
+        <SettingsModal 
+            onClose={() => setShowSettings(false)} 
+            onReset={handleReset}
+        />
+      )}
+    </main>
+  );
+}
