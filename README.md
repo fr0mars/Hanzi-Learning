@@ -42,6 +42,6 @@ npm run dev
 ## Disclaimer
 
 - this is meant to be used in local, probably not secure lol
-- this has been done in one afternoon so there might(are) be bugs
+- this has been done (vibecoded) in one afternoon so there might(are) be bugs
 
 
