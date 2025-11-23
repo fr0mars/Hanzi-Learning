@@ -1,6 +1,28 @@
 # Hanzi-Learning
 learning app with memo cards to learn chinese characters from french
 
+
+<table align="center">
+  <tr>
+    <td align="center" valign="top">
+      <img src="images/dashboard.png" alt="" width="400">
+    </td>
+    <td align="center" valign="top">
+      <img src="images/learn.png" alt="" width="400">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="images/review.png" alt="" width="400">
+    </td>
+    <td align="center" valign="top">
+      <img src="images/training.png" alt="" width="300">
+    </td>
+  </tr>
+</table>
+
+---
+
 ## How to use
 
 ### First time

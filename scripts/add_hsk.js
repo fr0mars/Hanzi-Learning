@@ -5,7 +5,7 @@ const fs = require('fs');
 
 const filePath = process.argv[2];
 if (!filePath) {
-    process.exit(1);
+  process.exit(1);
 }
 
 const dbPath = path.join(process.cwd(), 'hanzi.db');
@@ -13,19 +13,19 @@ const db = new Database(dbPath);
 
 let data;
 try {
-    const raw = fs.readFileSync(filePath, 'utf-8');
-    data = JSON.parse(raw);
+  const raw = fs.readFileSync(filePath, 'utf-8');
+  data = JSON.parse(raw);
 } catch (e) {
-    process.exit(1);
+  process.exit(1);
 }
 
 if (!Array.isArray(data)) {
-    process.exit(1);
+  process.exit(1);
 }
 
 const insertItem = db.prepare(`
-  INSERT OR REPLACE INTO items (id, type, level, char, pinyin, tone, meaning, mnemonic, components, example)
-  VALUES (@id, @type, @level, @char, @pinyin, @tone, @meaning, @mnemonic, @components, @example)
+  INSERT OR REPLACE INTO items (id, type, level, char, pinyin, tone, meaning, mnemonic, components, example, faction)
+  VALUES (@id, @type, @level, @char, @pinyin, @tone, @meaning, @mnemonic, @components, @example, @faction)
 `);
 
 const insertAssign = db.prepare(`
@@ -33,6 +33,7 @@ const insertAssign = db.prepare(`
   VALUES (@item_id, 0, 0)
 `);
 
+const FACTIONS = ['DRAGON', 'TURTLE', 'PHOENIX', 'TIGER'];
 
 const transaction = db.transaction((items) => {
   for (const item of items) {
@@ -46,15 +47,16 @@ const transaction = db.transaction((items) => {
       meaning: JSON.stringify(item.meaning || []),
       mnemonic: item.mnemonic || null,
       components: JSON.stringify(item.components || []),
-      example: item.example || null
+      example: item.example || null,
+      faction: item.faction || FACTIONS[Math.floor(Math.random() * FACTIONS.length)]
     });
     insertAssign.run({ item_id: item.id });
   }
 });
 
 try {
-    transaction(data);
-    console.log("done");
+  transaction(data);
+  console.log("done");
 
 } catch (e) {
 }

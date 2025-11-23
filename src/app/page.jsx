@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail } from '@/components/UI';
+import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail, FactionSelector } from '@/components/UI';
 
 export default function Home() {
   const [view, setView] = useState('dashboard')
@@ -13,55 +13,67 @@ export default function Home() {
 
   const refreshDashboard = async () => {
     try {
-        const res = await fetch('/api/study?action=dashboard');
-        if (res.ok) setData(await res.json());
-        setView('dashboard');
+      const res = await fetch('/api/study?action=dashboard');
+      if (res.ok) setData(await res.json());
+      setView('dashboard');
     } catch (e) { console.error(e); }
   };
 
   useEffect(() => { refreshDashboard(); }, []);
+
+  const handleFactionSelect = async (faction) => {
+    await fetch('/api/study?action=set_faction', {
+      method: 'POST',
+      body: JSON.stringify({ faction })
+    });
+    refreshDashboard();
+  };
 
   const startSession = async (type) => {
     setIsPractice(false);
     const res = await fetch(`/api/study?action=${type}`);
     const items = await res.json();
     if (items.length > 0) {
-        setSessionItems(items);
-        setView(type);
+      setSessionItems(items);
+      setView(type);
     } else {
-        alert("Rien à étudier pour le moment !");
+      alert("Rien à étudier pour le moment !");
     }
   };
 
   const openLevel = async (level) => {
-      setCurrentLevel(level);
-      const res = await fetch(`/api/study?action=level_items&level=${level}`);
-      const items = await res.json();
-      setLevelItems(items);
-      setView('level_detail');
+    setCurrentLevel(level);
+    const res = await fetch(`/api/study?action=level_items&level=${level}`);
+    const items = await res.json();
+    setLevelItems(items);
+    setView('level_detail');
   };
 
   const startPractice = (items) => {
-      setSessionItems(items);
-      setIsPractice(true);
-      setView('reviews'); // On utilise l'interface de review mais en mode practice
+    setSessionItems(items);
+    setIsPractice(true);
+    setView('reviews'); // On utilise l'interface de review mais en mode practice
   };
 
   const handleReset = async () => {
     if (confirm("Êtes-vous sûr de vouloir tout effacer ?")) {
-        await fetch('/api/study?action=reset', { method: 'POST' });
-        window.location.reload();
+      await fetch('/api/study?action=reset', { method: 'POST' });
+      window.location.reload();
     }
   };
 
   if (!data) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Chargement...</div>;
 
+  if (!data.user.faction) {
+    return <FactionSelector onSelect={handleFactionSelect} />;
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 font-sans">
       {view === 'dashboard' && (
-        <Dashboard 
-          user={data.user} 
-          lessonsCount={data.lessonsCount} 
+        <Dashboard
+          user={data.user}
+          lessonsCount={data.lessonsCount}
           reviewsCount={data.reviewsCount}
           hskStats={data.hskStats || {}}
           onStart={startSession}
@@ -71,24 +83,24 @@ export default function Home() {
       )}
 
       {view === 'level_detail' && (
-          <LevelDetail 
-            level={currentLevel} 
-            items={levelItems} 
-            onBack={() => setView('dashboard')}
-            onStartPractice={startPractice}
-          />
+        <LevelDetail
+          level={currentLevel}
+          items={levelItems}
+          onBack={() => setView('dashboard')}
+          onStartPractice={startPractice}
+        />
       )}
 
       {(view === 'lessons' || view === 'reviews') && (
-        view === 'lessons' ? 
-        <LessonSession items={sessionItems} onComplete={refreshDashboard} /> :
-        <ReviewSession items={sessionItems} onComplete={refreshDashboard} isPractice={isPractice} />
+        view === 'lessons' ?
+          <LessonSession items={sessionItems} onComplete={refreshDashboard} /> :
+          <ReviewSession items={sessionItems} onComplete={refreshDashboard} isPractice={isPractice} />
       )}
 
       {showSettings && (
-        <SettingsModal 
-            onClose={() => setShowSettings(false)} 
-            onReset={handleReset}
+        <SettingsModal
+          onClose={() => setShowSettings(false)}
+          onReset={handleReset}
         />
       )}
     </main>

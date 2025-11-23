@@ -15,7 +15,7 @@ db.exec(`
     id INTEGER PRIMARY KEY, 
     username TEXT DEFAULT 'Disciple', 
     level INTEGER DEFAULT 1, 
-    sect TEXT, 
+    faction TEXT, 
     exp INTEGER DEFAULT 0
   );
 
@@ -29,7 +29,8 @@ db.exec(`
     meaning TEXT NOT NULL, 
     mnemonic TEXT, 
     components TEXT, 
-    example TEXT
+    example TEXT,
+    faction TEXT
   );
 
   CREATE TABLE IF NOT EXISTS assignments (
