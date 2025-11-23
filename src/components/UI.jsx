@@ -40,7 +40,7 @@ function SettingsModal({ onClose, onReset }) {
                     </div>
                     <div className="p-4 bg-red-950/30 border border-red-900/50 rounded-xl">
                         <h4 className="font-bold text-red-400 mb-2 flex items-center gap-2"><RotateCcw size={16}/> Zone de Danger</h4>
-                        <p className="text-xs text-red-300/70 mb-4">Ceci réinitialisera toute votre progression au niveau 1.</p>
+                        <p className="text-xs text-red-300/70 mb-4">Ceci réinitialisera toute votre progression.</p>
                         <button onClick={onReset} className="w-full py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-red-900/20">
                             Réinitialiser ma progression
                         </button>
@@ -52,22 +52,33 @@ function SettingsModal({ onClose, onReset }) {
 }
 
 export function LevelDetail({ level, items, onBack, onStartPractice }) {
-    const learnedCount = items.filter(i => i.assignment.srs_stage > 0).length;
+    const learnedItems = items.filter(i => i.assignment.srs_stage > 0);
+    
     return (
         <div className="min-h-screen bg-slate-950 p-6 animate-in">
             <div className="max-w-6xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
-                    <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"><ArrowLeft size={20} /> Retour</button>
+                    <button onClick={onBack} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors font-bold"><ArrowLeft size={20} /> Retour au Dashboard</button>
                     <h1 className="text-3xl font-bold text-white">Niveau HSK {level}</h1>
-                    <div className="w-24"></div>
+                    <div className="w-32"></div>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl mb-8 flex justify-between items-center shadow-lg">
                     <div>
                         <div className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Progression</div>
-                        <div className="text-2xl text-white font-bold">{learnedCount} / {items.length} <span className="text-sm text-slate-500 font-normal">items appris</span></div>
+                        <div className="text-2xl text-white font-bold">{learnedItems.length} / {items.length} <span className="text-sm text-slate-500 font-normal">items appris</span></div>
                     </div>
-                    <button onClick={() => onStartPractice(items)} className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg shadow-indigo-500/20">
-                        <Brain size={20}/> S'entraîner (Tout)
+                    
+                    {/* MODIFICATION 1 SUITE : Bouton désactivé si 0 items appris */}
+                    <button 
+                        onClick={() => onStartPractice(learnedItems)} 
+                        disabled={learnedItems.length === 0}
+                        className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg 
+                            ${learnedItems.length > 0 
+                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20 cursor-pointer' 
+                                : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'}`}
+                    >
+                        <Brain size={20}/> 
+                        {learnedItems.length > 0 ? `S'entraîner (${learnedItems.length})` : "Rien à réviser"}
                     </button>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
@@ -93,15 +104,9 @@ export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart,
   const userSect = user.sect ? SECTS[user.sect] : null;
   const HSKCard = ({ level, stats, icon, colorClass, bgClass }) => {
       const isLocked = stats.locked;
-      
       return (
-      <div 
-        onClick={() => !isLocked && onOpenLevel(level)} 
-        className={`relative bg-slate-800/50 p-5 rounded-2xl border flex flex-col justify-between transition-all group shadow-lg
-            ${isLocked ? 'border-slate-700 opacity-60 cursor-not-allowed grayscale' : 'border-white/5 hover:bg-slate-800 cursor-pointer hover:border-white/20 hover:-translate-y-1'}
-        `}>
+      <div onClick={() => !isLocked && onOpenLevel(level)} className={`relative bg-slate-800/50 p-5 rounded-2xl border flex flex-col justify-between transition-all group shadow-lg ${isLocked ? 'border-slate-700 opacity-60 cursor-not-allowed grayscale' : 'border-white/5 hover:bg-slate-800 cursor-pointer hover:border-white/20 hover:-translate-y-1'}`}>
           {isLocked && <div className="absolute top-4 right-4 text-slate-500"><Lock size={20} /></div>}
-          
           <div className="flex justify-between items-start mb-4">
               <div className={`p-2 rounded-xl border transition-colors ${colorClass} ${bgClass}`}>{icon}</div>
               <span className="text-2xl font-bold text-white">{stats.percent}%</span>
@@ -126,7 +131,7 @@ export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart,
         <div className="max-w-5xl mx-auto flex justify-between items-center">
             <div className="flex items-center gap-3 group cursor-default">
                 <div className="bg-gradient-to-br from-red-500 to-orange-600 p-2 rounded-xl shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform"><Flame className="text-white fill-white" size={20} /></div>
-                <h1 className="text-xl font-bold tracking-tight text-white">Hanzi Learning <span className="text-slate-500 text-xs font-medium ml-1 bg-slate-800 px-2 py-0.5 rounded-full">Local</span></h1>
+                <h1 className="text-xl font-bold tracking-tight text-white">HanziMaster <span className="text-slate-500 text-xs font-medium ml-1 bg-slate-800 px-2 py-0.5 rounded-full">Local</span></h1>
             </div>
             <button onClick={(e) => { e.stopPropagation(); onOpenSettings(); }} className="text-slate-400 hover:text-white transition-all p-2 hover:bg-white/10 rounded-full active:scale-95"><Settings size={24} /></button>
         </div>
@@ -183,7 +188,8 @@ export function LessonSession({ items, onComplete }) {
       <div className="min-h-screen bg-slate-950 flex flex-col animate-in">
         <div className="bg-slate-900/50 p-4 flex justify-between items-center border-b border-white/5">
             <div className="flex items-center gap-4">
-                <button onClick={onComplete} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 hover:text-white transition-colors text-sm"><ArrowLeft size={14} /> Quitter</button>
+                <button onClick={onComplete} className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 hover:text-white transition-colors text-sm font-bold"><ArrowLeft size={16} /> Retour</button>
+                <span className="text-slate-400 font-mono text-sm ml-4">{index + 1} / {items.length}</span>
                 <div className="h-1.5 w-32 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-pink-500 transition-all" style={{ width: `${((index) / items.length) * 100}%` }}></div></div>
             </div>
             <span className={`px-3 py-1 rounded text-xs font-bold uppercase shadow-lg ${itemColorClass}`}>{item.type}</span>
@@ -229,7 +235,7 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
 
     const handleInputChange = (e) => {
         const raw = e.target.value;
-        const formatted = formatPinyin(raw);
+        const formatted = formatPinyin(raw); 
         setInput(formatted);
     };
 
@@ -237,11 +243,14 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
         e.preventDefault();
         const normInput = input.trim().toLowerCase();
         
+        if (!normInput) return;
+
         const pinyinClean = item.pinyin ? item.pinyin.toLowerCase() : "";
-        
         const matchesPinyin = normInput === pinyinClean || (pinyinClean && pinyinClean.includes(normInput));
         
-        const matchesMeaning = item.meaning.some(m => normInput.includes(m.toLowerCase()) || m.toLowerCase().includes(normInput));
+        const matchesMeaning = item.meaning.some(m => 
+            normInput.includes(m.toLowerCase()) || m.toLowerCase().includes(normInput)
+        );
 
         if (matchesPinyin || matchesMeaning) {
             setStatus('success');
@@ -262,8 +271,8 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
              {isPractice && <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-50">MODE ENTRAÎNEMENT</div>}
              <div className="fixed top-0 left-0 w-full h-1 bg-slate-800"><div className="h-full bg-green-500 transition-all" style={{width: `${(index/items.length)*100}%`}}></div></div>
              
-             <button onClick={onComplete} className="fixed top-4 left-4 p-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white z-50">
-                <ArrowLeft size={20} />
+             <button onClick={onComplete} className="fixed top-4 left-4 flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white z-50 font-bold text-sm">
+                <ArrowLeft size={16} /> Retour
              </button>
 
              <div className="w-full max-w-xl">
