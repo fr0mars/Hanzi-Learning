@@ -5,6 +5,7 @@ import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail, Fa
 export default function Home() {
   const [view, setView] = useState('dashboard')
   const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
   const [sessionItems, setSessionItems] = useState([]);
   const [levelItems, setLevelItems] = useState([]);
   const [currentLevel, setCurrentLevel] = useState(1);
@@ -13,10 +14,18 @@ export default function Home() {
 
   const refreshDashboard = async () => {
     try {
+      setError(null);
       const res = await fetch('/api/study?action=dashboard');
-      if (res.ok) setData(await res.json());
-      setView('dashboard');
-    } catch (e) { console.error(e); }
+      if (res.ok) {
+        setData(await res.json());
+        setView('dashboard');
+      } else {
+        throw new Error("Erreur lors du chargement des données");
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Impossible de charger les données. Vérifiez votre connexion ou réessayez.");
+    }
   };
 
   useEffect(() => { refreshDashboard(); }, []);
@@ -61,6 +70,18 @@ export default function Home() {
       window.location.reload();
     }
   };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-4 text-center">
+        <div className="text-red-400 text-xl font-bold mb-4">Oups ! Une erreur est survenue.</div>
+        <p className="text-slate-400 mb-6">{error}</p>
+        <button onClick={refreshDashboard} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold transition-colors">
+          Réessayer
+        </button>
+      </div>
+    );
+  }
 
   if (!data) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Chargement...</div>;
 

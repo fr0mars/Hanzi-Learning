@@ -83,6 +83,7 @@ function SettingsModal({ onClose, onReset }) {
 
 export function LevelDetail({ level, items, onBack, onStartPractice }) {
     const learnedItems = items.filter(i => i.assignment.srs_stage > 0);
+    const [selectedItem, setSelectedItem] = useState(null);
 
     return (
         <div className="min-h-screen bg-slate-950 p-6 animate-in">
@@ -117,13 +118,126 @@ export function LevelDetail({ level, items, onBack, onStartPractice }) {
                         const isLearned = item.assignment.srs_stage > 0;
                         const srsColor = isLearned ? (item.assignment.srs_stage >= 7 ? 'border-blue-500 bg-blue-900/20' : (item.assignment.srs_stage >= 5 ? 'border-green-500 bg-green-900/20' : 'border-pink-500 bg-pink-900/20')) : 'border-slate-800 bg-slate-900';
                         return (
-                            <div key={item.id} className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 relative group transition-all ${srsColor} ${isLocked ? 'opacity-30 grayscale' : 'hover:scale-105 cursor-pointer'}`}>
+                            <div
+                                key={item.id}
+                                onClick={() => isLearned && setSelectedItem(item)}
+                                className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 relative group transition-all ${srsColor} ${isLocked ? 'opacity-30 grayscale' : 'hover:scale-105 cursor-pointer'}`}
+                            >
                                 <span className={`text-3xl font-serif ${isLearned ? 'text-white' : 'text-slate-500'}`}>{item.char}</span>
                                 <span className="text-xs text-slate-500 mt-1 font-mono">{item.pinyin || '-'}</span>
                                 {isLocked && <div className="absolute inset-0 flex items-center justify-center"><div className="bg-slate-950/80 p-1 rounded"><Settings size={16} className="text-slate-600" /></div></div>}
                             </div>
                         );
                     })}
+                </div>
+            </div>
+            {selectedItem && (
+                <ItemDetailModal
+                    item={selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                />
+            )}
+        </div>
+    );
+}
+
+function ItemDetailModal({ item, onClose }) {
+    const [step, setStep] = useState(0);
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => document.body.style.overflow = 'unset';
+    }, []);
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="p-4 border-b border-white/5 flex justify-between items-center bg-slate-900/50">
+                    <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 rounded text-xs font-bold uppercase shadow-lg ${TYPE_COLORS[item.type] || "bg-slate-600"}`}>
+                            {item.type}
+                        </span>
+                        <h2 className="text-white font-bold text-lg">Détails du caractère</h2>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors">
+                        <X size={24} />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                    <div className="flex flex-col items-center justify-center mb-8">
+                        <div className={`text-9xl font-serif text-white mb-4 drop-shadow-2xl ${item.type !== 'radical' && item.tone && step >= 1 ? TONE_COLORS[Array.isArray(item.tone) ? item.tone[0] : item.tone]?.split(' ')[0] : ''}`}>
+                            {item.char}
+                        </div>
+                    </div>
+
+                    <div className="w-full bg-slate-950/30 rounded-3xl p-6 border border-white/5 min-h-[300px] flex flex-col">
+                        <div className="flex gap-6 mb-8 border-b border-white/5 pb-4 justify-center">
+                            {['Signification', 'Lecture', 'Mnémonique'].map((label, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setStep(i)}
+                                    disabled={item.type === 'radical' && i === 1}
+                                    className={`text-sm font-bold uppercase tracking-wider transition-all duration-300 pb-2 border-b-2 ${step === i ? 'text-white border-pink-500' : 'text-slate-600 border-transparent hover:text-slate-400'} ${(item.type === 'radical' && i === 1) ? 'opacity-20 cursor-not-allowed' : ''}`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex-1">
+                            {step === 0 && (
+                                <div className="text-center">
+                                    <h3 className="text-4xl font-bold text-white mb-4 tracking-tight">{item.meaning.join(', ')}</h3>
+                                    <div className="flex flex-wrap gap-2 mt-6 justify-center">
+                                        <span className="text-slate-500 text-xs uppercase font-bold tracking-widest self-center mr-2">COMPOSITION</span>
+                                        {item.components.length > 0 ? (
+                                            <div className="flex gap-2">
+                                                {item.components.map((comp, idx) => (
+                                                    <span key={idx} className="text-slate-300 bg-white/5 px-2 py-1 rounded text-sm border border-white/5">{comp}</span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-slate-500 italic text-sm">Élément fondamental (Radical)</span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {step === 1 && (
+                                <div className="text-center">
+                                    {item.type !== 'radical' ? (
+                                        <>
+                                            <div className="flex items-center justify-center gap-4 mb-6">
+                                                <h3 className="text-6xl font-mono text-white tracking-tighter">{item.pinyin}</h3>
+                                                {item.tone && (
+                                                    <div className={`px-3 py-1 rounded border text-xs font-bold uppercase ${TONE_COLORS[Array.isArray(item.tone) ? item.tone[0] : item.tone]}`}>
+                                                        Ton {Array.isArray(item.tone) ? item.tone.join(' & ') : item.tone}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {item.example && (
+                                                <div className="bg-slate-900/50 p-6 rounded-2xl border-l-4 border-pink-500 text-left mx-auto max-w-lg">
+                                                    <p className="text-xl text-slate-200 font-serif italic">"{item.example}"</p>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="text-slate-500 italic">Les radicaux n'ont pas de lecture.</div>
+                                    )}
+                                </div>
+                            )}
+
+                            {step === 2 && (
+                                <div>
+                                    <h4 className="text-pink-400 text-xs font-bold uppercase tracking-widest mb-4">Histoire Mnémonique</h4>
+                                    <p className="text-xl text-slate-200 leading-relaxed font-light border-l-2 border-white/10 pl-6">
+                                        {item.mnemonic || "Aucune histoire disponible."}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
