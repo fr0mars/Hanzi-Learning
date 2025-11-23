@@ -393,10 +393,10 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
         if (!normInput) return;
 
         const pinyinClean = item.pinyin ? item.pinyin.toLowerCase() : "";
-        const matchesPinyin = normInput === pinyinClean || (pinyinClean && pinyinClean.includes(normInput));
+        const matchesPinyin = normInput === pinyinClean;
 
         const matchesMeaning = item.meaning.some(m =>
-            normalize(input).includes(normalize(m)) || normalize(m).includes(normalize(input))
+            normalize(m) === normalize(input)
         );
 
         if (matchesPinyin || matchesMeaning) {
