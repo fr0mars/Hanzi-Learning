@@ -131,7 +131,7 @@ export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart,
         <div className="max-w-5xl mx-auto flex justify-between items-center">
             <div className="flex items-center gap-3 group cursor-default">
                 <div className="bg-gradient-to-br from-red-500 to-orange-600 p-2 rounded-xl shadow-lg shadow-red-500/20 group-hover:scale-110 transition-transform"><Flame className="text-white fill-white" size={20} /></div>
-                <h1 className="text-xl font-bold tracking-tight text-white">HanziMaster <span className="text-slate-500 text-xs font-medium ml-1 bg-slate-800 px-2 py-0.5 rounded-full">Local</span></h1>
+                <h1 className="text-xl font-bold tracking-tight text-white">Hanzi Learning <span className="text-slate-500 text-xs font-medium ml-1 bg-slate-800 px-2 py-0.5 rounded-full">Local</span></h1>
             </div>
             <button onClick={(e) => { e.stopPropagation(); onOpenSettings(); }} className="text-slate-400 hover:text-white transition-all p-2 hover:bg-white/10 rounded-full active:scale-95"><Settings size={24} /></button>
         </div>

@@ -3,38 +3,20 @@ learning app with memo cards to learn chinese characters from french
 
 ## How to use
 
-first install all the necessary packages 
+### First time
+just run
 ```
-npm install
+./setup.sh
 ```
-then run seed to setup the database (to remember your progress and store the characters)
-```
-npm run seed
-```
+this will setup the database and add the hsk characters before launching the app
 
-you can then load the different hsk json data
-```
-node scripts/add_hsk.js data/hsk<x>_generated.json
-```
-*Note that in `data/` there is up to hsk3.*
+Note: there is only up to hsk3 in `data/`
 
-
-and finally run it :
+### Then
+run
 ```
 npm run dev
 ```
-
-and to clean :
-```
-rm -rf node_modules
-rm package-lock.json
-```
-
-to remove the db:
-```
-rm hanzi.db
-```
-
 ## Disclaimer
 
 - this is meant to be used in local, probably not secure lol
