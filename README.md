@@ -1,5 +1,5 @@
 # Hanzi-Learning
-learning app with memo cards to learn chinese characters 
+learning app with memo cards to learn chinese characters from french
 
 ## How to use
 
