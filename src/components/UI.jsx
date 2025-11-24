@@ -126,6 +126,11 @@ export function LevelDetail({ level, items, onBack, onStartPractice }) {
                             >
                                 <span className={`text-3xl font-serif ${isLearned ? 'text-white' : 'text-slate-500'}`}>{item.char}</span>
                                 <span className="text-xs text-slate-500 mt-1 font-mono">{item.pinyin || '-'}</span>
+                                {isLearned && item.meaning && item.meaning.length > 0 && (
+                                    <span className="text-xs text-slate-400 mt-0.5 text-center line-clamp-2 px-1">
+                                        {item.meaning.join(', ')}
+                                    </span>
+                                )}
                                 {isLocked && <div className="absolute inset-0 flex items-center justify-center"><div className="bg-slate-950/80 p-1 rounded"><Settings size={16} className="text-slate-600" /></div></div>}
                             </div>
                         );
@@ -508,17 +513,27 @@ export function LessonSession({ items, onComplete }) {
 }
 
 export function ReviewSession({ items, onComplete, isPractice = false }) {
+    const [shuffledItems] = useState(() => {
+        const shuffled = [...items];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    });
+
     const [index, setIndex] = useState(0);
     const [mode, setMode] = useState('meaning');
     const [input, setInput] = useState('');
     const [status, setStatus] = useState('idle');
-    const [results, setResults] = useState({ correct: 0, total: items.length });
+    const [results, setResults] = useState({ correct: 0, total: shuffledItems.length });
     const [showResults, setShowResults] = useState(false);
+    const [showPinyin, setShowPinyin] = useState(false);
     const inputRef = useRef(null);
-    const item = items[index];
+    const item = shuffledItems[index];
 
     useEffect(() => {
-        setInput(''); setStatus('idle');
+        setInput(''); setStatus('idle'); setShowPinyin(false);
     }, [item, index]);
 
     useEffect(() => { if (status !== 'success' && inputRef.current) inputRef.current.focus(); }, [item, status]);
@@ -552,7 +567,14 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
             setStatus('success');
             setResults(prev => ({ ...prev, correct: prev.correct + 1 }));
             await fetch('/api/study', { method: 'POST', body: JSON.stringify({ itemId: item.id, success: true, isPractice }) });
-            setTimeout(() => { if (index < items.length - 1) setIndex(index + 1); else setShowResults(true); }, 800);
+
+            setTimeout(() => {
+                setShowPinyin(true);
+                setTimeout(() => {
+                    if (index < shuffledItems.length - 1) setIndex(index + 1);
+                    else setShowResults(true);
+                }, 2000);
+            }, 500);
         } else {
             setStatus('error');
             await fetch('/api/study', { method: 'POST', body: JSON.stringify({ itemId: item.id, success: false, isPractice }) });
@@ -566,7 +588,7 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
             {isPractice && <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg z-50">MODE ENTRAÎNEMENT</div>}
-            <div className="fixed top-0 left-0 w-full h-1 bg-slate-800"><div className="h-full bg-green-500 transition-all" style={{ width: `${(index / items.length) * 100}%` }}></div></div>
+            <div className="fixed top-0 left-0 w-full h-1 bg-slate-800"><div className="h-full bg-green-500 transition-all" style={{ width: `${(index / shuffledItems.length) * 100}%` }}></div></div>
 
             <button onClick={onComplete} className="fixed top-4 left-4 flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white z-50 font-bold text-sm">
                 <ArrowLeft size={16} /> Retour
@@ -587,6 +609,13 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
                             placeholder="Tapez votre réponse..."
                         />
                     </form>
+                    {status === 'success' && showPinyin && (
+                        <div className="mt-6 text-center animate-in">
+                            <div className="text-green-500 font-bold uppercase text-xs mb-1">✓ Correct</div>
+                            <div className="text-xl font-bold text-white">{item.meaning.join(', ')}</div>
+                            <div className="text-lg text-slate-400 font-mono mt-1">{item.pinyin}</div>
+                        </div>
+                    )}
                     {status === 'error' && (
                         <div className="mt-6 text-center animate-in">
                             <div className="text-red-500 font-bold uppercase text-xs mb-1">Réponse correcte</div>
