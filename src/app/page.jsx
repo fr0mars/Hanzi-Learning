@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail, FactionSelector } from '@/components/UI';
+import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail, FactionSelector, LearnedItems } from '@/components/UI';
 
 export default function Home() {
   const [view, setView] = useState('dashboard')
@@ -8,6 +8,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [sessionItems, setSessionItems] = useState([]);
   const [levelItems, setLevelItems] = useState([]);
+  const [learnedItems, setLearnedItems] = useState([]);
   const [currentLevel, setCurrentLevel] = useState(1);
   const [showSettings, setShowSettings] = useState(false);
   const [isPractice, setIsPractice] = useState(false);
@@ -58,6 +59,13 @@ export default function Home() {
     setView('level_detail');
   };
 
+  const openLearnedItems = async () => {
+    const res = await fetch('/api/study?action=learned_items');
+    const items = await res.json();
+    setLearnedItems(items);
+    setView('learned_items');
+  };
+
   const startPractice = (items) => {
     setSessionItems(items);
     setIsPractice(true);
@@ -96,10 +104,12 @@ export default function Home() {
           user={data.user}
           lessonsCount={data.lessonsCount}
           reviewsCount={data.reviewsCount}
+          learnedCount={Object.values(data.hskStats || {}).reduce((sum, stat) => sum + (stat.learned || 0), 0)}
           hskStats={data.hskStats || {}}
           onStart={startSession}
           onOpenSettings={() => setShowSettings(true)}
           onOpenLevel={openLevel}
+          onOpenLearnedItems={openLearnedItems}
         />
       )}
 
@@ -107,6 +117,14 @@ export default function Home() {
         <LevelDetail
           level={currentLevel}
           items={levelItems}
+          onBack={() => setView('dashboard')}
+          onStartPractice={startPractice}
+        />
+      )}
+
+      {view === 'learned_items' && (
+        <LearnedItems
+          items={learnedItems}
           onBack={() => setView('dashboard')}
           onStartPractice={startPractice}
         />

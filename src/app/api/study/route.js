@@ -105,6 +105,17 @@ export async function GET(request) {
     return NextResponse.json(items.map(parseItem));
   }
 
+  if (action === 'learned_items') {
+    const items = db.prepare(`
+        SELECT i.*, a.srs_stage, a.unlocked, a.next_review 
+        FROM items i 
+        JOIN assignments a ON i.id = a.item_id 
+        WHERE a.srs_stage > 0
+        ORDER BY i.level ASC, a.srs_stage DESC
+    `).all();
+    return NextResponse.json(items.map(parseItem));
+  }
+
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 }
 

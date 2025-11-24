@@ -147,6 +147,112 @@ export function LevelDetail({ level, items, onBack, onStartPractice }) {
     );
 }
 
+export function LearnedItems({ items, onBack, onStartPractice }) {
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [filterLevel, setFilterLevel] = useState('all');
+
+    const filteredItems = filterLevel === 'all'
+        ? items
+        : items.filter(item => item.level === parseInt(filterLevel));
+
+    const levelCounts = {};
+    items.forEach(item => {
+        levelCounts[item.level] = (levelCounts[item.level] || 0) + 1;
+    });
+
+    return (
+        <div className="min-h-screen bg-slate-950 p-6 animate-in">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex items-center justify-between mb-8">
+                    <button onClick={onBack} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors font-bold">
+                        <ArrowLeft size={20} /> Retour au Dashboard
+                    </button>
+                    <h1 className="text-3xl font-bold text-white">Leçons apprises</h1>
+                    <div className="w-32"></div>
+                </div>
+
+                <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl mb-8 shadow-lg">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <div className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-1">Total appris</div>
+                            <div className="text-2xl text-white font-bold">{items.length} <span className="text-sm text-slate-500 font-normal">caractères</span></div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <span className="text-slate-400 text-sm font-bold">Filtrer:</span>
+                            <select
+                                value={filterLevel}
+                                onChange={(e) => setFilterLevel(e.target.value)}
+                                className="bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-700 font-bold cursor-pointer hover:bg-slate-700 transition-colors"
+                            >
+                                <option value="all">Tous les niveaux ({items.length})</option>
+                                {Object.keys(levelCounts).sort().map(level => (
+                                    <option key={level} value={level}>HSK {level} ({levelCounts[level]})</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <button
+                            onClick={() => onStartPractice(filteredItems)}
+                            disabled={filteredItems.length === 0}
+                            className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg 
+                                ${filteredItems.length > 0
+                                    ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20 cursor-pointer'
+                                    : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'}`}
+                        >
+                            <Brain size={20} />
+                            {filteredItems.length > 0 ? `S'entraîner (${filteredItems.length})` : "Aucun caractère"}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+                    {filteredItems.map(item => {
+                        const srsColor = item.assignment.srs_stage >= 7
+                            ? 'border-blue-500 bg-blue-900/20'
+                            : item.assignment.srs_stage >= 5
+                                ? 'border-green-500 bg-green-900/20'
+                                : 'border-pink-500 bg-pink-900/20';
+
+                        return (
+                            <div
+                                key={item.id}
+                                onClick={() => setSelectedItem(item)}
+                                className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-center p-2 relative group transition-all hover:scale-105 cursor-pointer ${srsColor}`}
+                            >
+                                <span className="text-3xl font-serif text-white">{item.char}</span>
+                                <span className="text-xs text-slate-500 mt-1 font-mono">{item.pinyin || '-'}</span>
+                                {item.meaning && item.meaning.length > 0 && (
+                                    <span className="text-xs text-slate-400 mt-0.5 text-center line-clamp-2 px-1">
+                                        {item.meaning.join(', ')}
+                                    </span>
+                                )}
+                                <div className="absolute top-1 right-1 bg-slate-950/80 px-1.5 py-0.5 rounded text-xs font-bold text-slate-400">
+                                    HSK{item.level}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {filteredItems.length === 0 && (
+                    <div className="text-center py-20">
+                        <div className="text-slate-500 text-xl mb-2">Aucun caractère appris</div>
+                        <div className="text-slate-600 text-sm">Commencez par apprendre quelques leçons !</div>
+                    </div>
+                )}
+            </div>
+            {selectedItem && (
+                <ItemDetailModal
+                    item={selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                />
+            )}
+        </div>
+    );
+}
+
+
 function ItemDetailModal({ item, onClose }) {
     const [step, setStep] = useState(0);
 
@@ -381,7 +487,7 @@ function SessionResults({ totalItems, correctItems, onComplete, sessionType = 'r
     );
 }
 
-export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart, onOpenSettings, onOpenLevel }) {
+export function Dashboard({ user, lessonsCount, reviewsCount, learnedCount, hskStats, onStart, onOpenSettings, onOpenLevel, onOpenLearnedItems }) {
     const userFaction = user.faction ? FACTIONS[user.faction] : null;
     const HSKCard = ({ level, stats, icon, colorClass, bgClass }) => {
         const isLocked = stats.locked;
@@ -439,7 +545,7 @@ export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart,
                     </div>
                     <div className="absolute -top-20 -right-20 opacity-20 pointer-events-none mix-blend-overlay"><Flame size={400} /></div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <button onClick={() => lessonsCount > 0 && onStart('lessons')} disabled={lessonsCount === 0} className={`group relative overflow-hidden p-8 rounded-3xl border transition-all text-left shadow-2xl h-64 flex flex-col justify-between ${lessonsCount > 0 ? 'bg-gradient-to-br from-pink-600 to-rose-900 border-pink-400/30 hover:scale-[1.02] cursor-pointer hover:shadow-pink-500/30' : 'bg-slate-800/50 border-white/5 opacity-50 cursor-not-allowed grayscale'}`}>
                         <div className="relative z-10"><div className="flex justify-between items-start"><span className="block text-xl font-bold text-pink-100 uppercase tracking-widest bg-pink-900/50 px-3 py-1 rounded-lg w-fit">Leçons</span>{lessonsCount > 0 && <span className="animate-pulse w-3 h-3 bg-pink-400 rounded-full shadow-[0_0_10px_#f472b6]"></span>}</div><span className="block text-7xl font-black text-white mt-4 drop-shadow-lg">{lessonsCount}</span></div>
                         <div className="relative z-10">{lessonsCount > 0 ? <span className="text-sm font-medium text-pink-200 bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">Nouveaux sujets</span> : <span className="text-sm text-slate-400">Aucune leçon.</span>}</div>
@@ -449,6 +555,11 @@ export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart,
                         <div className="relative z-10"><div className="flex justify-between items-start"><span className="block text-xl font-bold text-indigo-100 uppercase tracking-widest bg-indigo-900/50 px-3 py-1 rounded-lg w-fit">Révisions</span>{reviewsCount > 0 && <span className="animate-pulse w-3 h-3 bg-indigo-400 rounded-full shadow-[0_0_10px_#818cf8]"></span>}</div><span className="block text-7xl font-black text-white mt-4 drop-shadow-lg">{reviewsCount}</span></div>
                         <div className="relative z-10">{reviewsCount > 0 ? <span className="text-sm font-medium text-indigo-200 bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">Prêt à réviser</span> : <span className="text-sm text-slate-400">Tout est à jour.</span>}</div>
                         <Brain size={180} className="absolute -bottom-8 -right-8 p-4 opacity-10 group-hover:opacity-25 transition-all transform group-hover:-rotate-12 text-white" />
+                    </button>
+                    <button onClick={() => learnedCount > 0 && onOpenLearnedItems()} disabled={learnedCount === 0} className={`group relative overflow-hidden p-8 rounded-3xl border transition-all text-left shadow-2xl h-64 flex flex-col justify-between ${learnedCount > 0 ? 'bg-gradient-to-br from-emerald-600 to-teal-900 border-emerald-400/30 hover:scale-[1.02] cursor-pointer hover:shadow-emerald-500/30' : 'bg-slate-800/50 border-white/5 opacity-50 cursor-not-allowed grayscale'}`}>
+                        <div className="relative z-10"><div className="flex justify-between items-start"><span className="block text-xl font-bold text-emerald-100 uppercase tracking-widest bg-emerald-900/50 px-3 py-1 rounded-lg w-fit">Leçons apprises</span></div><span className="block text-7xl font-black text-white mt-4 drop-shadow-lg">{learnedCount}</span></div>
+                        <div className="relative z-10">{learnedCount > 0 ? <span className="text-sm font-medium text-emerald-200 bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">Caractères appris</span> : <span className="text-sm text-slate-400">Aucun caractère appris.</span>}</div>
+                        <Trophy size={180} className="absolute -bottom-8 -right-8 p-4 opacity-10 group-hover:opacity-25 transition-all transform group-hover:scale-110 text-white" />
                     </button>
                 </div>
                 <h3 className="text-slate-400 font-bold uppercase tracking-widest text-sm mt-8 mb-4">Progression HSK</h3>
@@ -461,6 +572,7 @@ export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart,
         </div>
     );
 }
+
 
 export function LessonSession({ items, onComplete }) {
     const [index, setIndex] = useState(0);
@@ -621,7 +733,14 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
                             <div className="text-red-500 font-bold uppercase text-xs mb-1">Réponse correcte</div>
                             <div className="text-xl font-bold text-white">{item.meaning.join(', ')}</div>
                             <div className="text-lg text-slate-400 font-mono mt-1">{item.pinyin}</div>
-                            <button onClick={() => { setIndex(index + 1); setStatus('idle'); }} className="text-slate-500 underline mt-4 hover:text-slate-800">Ignorer et continuer</button>
+                            <button onClick={() => {
+                                if (index < shuffledItems.length - 1) {
+                                    setIndex(index + 1);
+                                    setStatus('idle');
+                                } else {
+                                    setShowResults(true);
+                                }
+                            }} className="text-slate-500 underline mt-4 hover:text-slate-800">Ignorer et continuer</button>
                         </div>
                     )}
                 </div>
