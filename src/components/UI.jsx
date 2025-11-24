@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Brain, ChevronRight, Settings, Flame, Volume2, X, Check, Activity, Layers, Zap, RotateCcw, VolumeX, ArrowLeft, Lock } from 'lucide-react';
+import { BookOpen, Brain, ChevronRight, Settings, Flame, Volume2, X, Check, Activity, Layers, Zap, RotateCcw, VolumeX, ArrowLeft, Lock, Trophy, Star } from 'lucide-react';
 import { TONE_COLORS, TYPE_COLORS, FACTIONS } from '@/lib/constants';
+import confetti from 'canvas-confetti';
 
 const formatPinyin = (input) => {
     const map = {
@@ -244,6 +245,137 @@ function ItemDetailModal({ item, onClose }) {
     );
 }
 
+function SessionResults({ totalItems, correctItems, onComplete, sessionType = 'review' }) {
+    const [animatedPercentage, setAnimatedPercentage] = useState(0);
+    const percentage = Math.round((correctItems / totalItems) * 100);
+    const isPerfect = percentage === 100;
+
+    useEffect(() => {
+        const duration = 1000;
+        const steps = 60;
+        const increment = percentage / steps;
+        let current = 0;
+
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= percentage) {
+                setAnimatedPercentage(percentage);
+                clearInterval(timer);
+
+                if (isPerfect && sessionType !== 'lesson') {
+                    setTimeout(() => {
+                        const duration = 3000;
+                        const animationEnd = Date.now() + duration;
+                        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 200 };
+
+                        function randomInRange(min, max) {
+                            return Math.random() * (max - min) + min;
+                        }
+
+                        const interval = setInterval(function () {
+                            const timeLeft = animationEnd - Date.now();
+
+                            if (timeLeft <= 0) {
+                                return clearInterval(interval);
+                            }
+
+                            const particleCount = 50 * (timeLeft / duration);
+                            confetti(Object.assign({}, defaults, {
+                                particleCount,
+                                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                            }));
+                            confetti(Object.assign({}, defaults, {
+                                particleCount,
+                                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                            }));
+                        }, 250);
+                    }, 500);
+                }
+            } else {
+                setAnimatedPercentage(Math.round(current));
+            }
+        }, duration / steps);
+
+        return () => clearInterval(timer);
+    }, [percentage, isPerfect, sessionType]);
+
+    const bgGradient = sessionType === 'lesson'
+        ? 'from-pink-600 to-rose-900'
+        : sessionType === 'practice'
+            ? 'from-indigo-600 to-blue-900'
+            : 'from-indigo-600 to-blue-900';
+
+    const accentColor = sessionType === 'lesson' ? 'pink' : 'indigo';
+
+    return (
+        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 animate-in">
+            <div className="max-w-2xl w-full">
+                <div className={`bg-gradient-to-br ${bgGradient} rounded-3xl p-12 shadow-2xl border border-white/10 text-center relative overflow-hidden`}>
+                    {/* Background decoration */}
+                    <div className="absolute -top-20 -right-20 opacity-10">
+                        {isPerfect ? <Trophy size={300} /> : <Star size={300} />}
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-4xl font-black text-white mb-8 relative z-10">
+                        {isPerfect ? '🎉 Parfait !' : 'Session Terminée !'}
+                    </h2>
+
+                    {/* Percentage Circle */}
+                    <div className="relative z-10 mb-8">
+                        <div className="w-64 h-64 mx-auto rounded-full bg-white/10 backdrop-blur-sm border-8 border-white/20 flex items-center justify-center shadow-2xl">
+                            <div className="text-center">
+                                <div className="text-8xl font-black text-white drop-shadow-lg">
+                                    {animatedPercentage}%
+                                </div>
+                                <div className="text-white/80 text-sm font-bold uppercase tracking-widest mt-2">
+                                    Réussite
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="relative z-10 flex justify-center gap-8 mb-8">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-4 border border-white/20">
+                            <div className="text-white/70 text-xs font-bold uppercase tracking-wider mb-1">Correct</div>
+                            <div className="text-3xl font-black text-white">{correctItems}</div>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-4 border border-white/20">
+                            <div className="text-white/70 text-xs font-bold uppercase tracking-wider mb-1">Total</div>
+                            <div className="text-3xl font-black text-white">{totalItems}</div>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-4 border border-white/20">
+                            <div className="text-white/70 text-xs font-bold uppercase tracking-wider mb-1">Erreurs</div>
+                            <div className="text-3xl font-black text-white">{totalItems - correctItems}</div>
+                        </div>
+                    </div>
+
+                    {/* Message */}
+                    <p className="text-white/90 text-lg mb-8 relative z-10">
+                        {isPerfect
+                            ? "Incroyable ! Vous avez tout réussi !"
+                            : percentage >= 80
+                                ? "Excellent travail ! Continuez comme ça !"
+                                : percentage >= 60
+                                    ? "Bon travail ! Encore un peu de pratique."
+                                    : "Continuez à pratiquer, vous progressez !"}
+                    </p>
+
+                    {/* Button */}
+                    <button
+                        onClick={onComplete}
+                        className="relative z-10 bg-white hover:bg-white/90 text-slate-900 px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:scale-105 flex items-center gap-2 mx-auto"
+                    >
+                        Retour au Dashboard
+                        <ChevronRight size={24} />
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function Dashboard({ user, lessonsCount, reviewsCount, hskStats, onStart, onOpenSettings, onOpenLevel }) {
     const userFaction = user.faction ? FACTIONS[user.faction] : null;
     const HSKCard = ({ level, stats, icon, colorClass, bgClass }) => {
@@ -329,6 +461,7 @@ export function LessonSession({ items, onComplete }) {
     const [index, setIndex] = useState(0);
     const [step, setStep] = useState(0);
     const item = items[index];
+
     if (!item) return <div className="min-h-screen flex items-center justify-center text-white bg-slate-950">Chargement...</div>;
 
     const handleNext = async () => {
@@ -379,6 +512,8 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
     const [mode, setMode] = useState('meaning');
     const [input, setInput] = useState('');
     const [status, setStatus] = useState('idle');
+    const [results, setResults] = useState({ correct: 0, total: items.length });
+    const [showResults, setShowResults] = useState(false);
     const inputRef = useRef(null);
     const item = items[index];
 
@@ -387,6 +522,10 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
     }, [item, index]);
 
     useEffect(() => { if (status !== 'success' && inputRef.current) inputRef.current.focus(); }, [item, status]);
+
+    if (showResults) {
+        return <SessionResults totalItems={results.total} correctItems={results.correct} onComplete={onComplete} sessionType={isPractice ? 'practice' : 'review'} />;
+    }
 
     const handleInputChange = (e) => {
         const raw = e.target.value;
@@ -411,8 +550,9 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
 
         if (matchesPinyin || matchesMeaning) {
             setStatus('success');
+            setResults(prev => ({ ...prev, correct: prev.correct + 1 }));
             await fetch('/api/study', { method: 'POST', body: JSON.stringify({ itemId: item.id, success: true, isPractice }) });
-            setTimeout(() => { if (index < items.length - 1) setIndex(index + 1); else onComplete(); }, 800);
+            setTimeout(() => { if (index < items.length - 1) setIndex(index + 1); else setShowResults(true); }, 800);
         } else {
             setStatus('error');
             await fetch('/api/study', { method: 'POST', body: JSON.stringify({ itemId: item.id, success: false, isPractice }) });
