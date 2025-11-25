@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDb, parseItem } from '@/lib/db';
 import { calculateNextReview } from '@/lib/srs';
+import fs from 'fs';
+import path from 'path';
 
 export async function GET(request) {
   const db = getDb();
@@ -114,6 +116,80 @@ export async function GET(request) {
         ORDER BY i.level ASC, a.srs_stage DESC
     `).all();
     return NextResponse.json(items.map(parseItem));
+  }
+
+  if (action === 'texts') {
+    try {
+      const textsDir = path.join(process.cwd(), 'src/data/texts');
+      if (!fs.existsSync(textsDir)) {
+        return NextResponse.json([]);
+      }
+      const files = fs.readdirSync(textsDir);
+      const texts = files.map(file => {
+        const content = fs.readFileSync(path.join(textsDir, file), 'utf-8');
+        const json = JSON.parse(content);
+        return json.map(t => ({
+          id: t.id,
+          title: t.title,
+          level: t.level,
+          description: t.description
+        }));
+      }).flat();
+
+      return NextResponse.json(texts);
+    } catch (error) {
+      console.error('Error reading texts:', error);
+      return NextResponse.json({ error: 'Failed to load texts' }, { status: 500 });
+    }
+  }
+
+  if (action === 'text') {
+    const id = searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'Missing text ID' }, { status: 400 });
+
+    try {
+      const textsDir = path.join(process.cwd(), 'src/data/texts');
+      const files = fs.readdirSync(textsDir);
+      let foundText = null;
+
+      for (const file of files) {
+        const content = fs.readFileSync(path.join(textsDir, file), 'utf-8');
+        const json = JSON.parse(content);
+        const text = json.find(t => t.id === id);
+        if (text) {
+          foundText = text;
+          break;
+        }
+      }
+
+      if (foundText) {
+        return NextResponse.json(foundText);
+      } else {
+        return NextResponse.json({ error: 'Text not found' }, { status: 404 });
+      }
+    } catch (error) {
+      console.error('Error reading text:', error);
+      return NextResponse.json({ error: 'Failed to load text' }, { status: 500 });
+    }
+  }
+
+  if (action === 'chars_details') {
+    const charsParam = searchParams.get('chars');
+    if (!charsParam) return NextResponse.json({});
+
+    const chars = charsParam.split(',');
+    if (chars.length === 0) return NextResponse.json({});
+
+    const placeholders = chars.map(() => '?').join(',');
+    const items = db.prepare(`SELECT * FROM items WHERE char IN (${placeholders})`).all(...chars);
+
+    const details = {};
+    items.forEach(item => {
+      const parsed = parseItem(item);
+      details[item.char] = parsed;
+    });
+
+    return NextResponse.json(details);
   }
 
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

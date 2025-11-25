@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail, FactionSelector, LearnedItems } from '@/components/UI';
+import { Dashboard, LessonSession, ReviewSession, SettingsModal, LevelDetail, FactionSelector, LearnedItems, ReadingList, ReadingSession } from '@/components/UI';
 
 export default function Home() {
   const [view, setView] = useState('dashboard')
@@ -12,6 +12,7 @@ export default function Home() {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [showSettings, setShowSettings] = useState(false);
   const [isPractice, setIsPractice] = useState(false);
+  const [currentTextId, setCurrentTextId] = useState(null);
 
   const refreshDashboard = async () => {
     try {
@@ -66,6 +67,15 @@ export default function Home() {
     setView('learned_items');
   };
 
+  const openReading = () => {
+    setView('reading_list');
+  };
+
+  const startReadingSession = (textId) => {
+    setCurrentTextId(textId);
+    setView('reading_session');
+  };
+
   const startPractice = (items) => {
     setSessionItems(items);
     setIsPractice(true);
@@ -110,6 +120,7 @@ export default function Home() {
           onOpenSettings={() => setShowSettings(true)}
           onOpenLevel={openLevel}
           onOpenLearnedItems={openLearnedItems}
+          onOpenReading={openReading}
         />
       )}
 
@@ -127,6 +138,21 @@ export default function Home() {
           items={learnedItems}
           onBack={() => setView('dashboard')}
           onStartPractice={startPractice}
+        />
+      )}
+
+      {view === 'reading_list' && (
+        <ReadingList
+          onBack={() => setView('dashboard')}
+          onSelectText={startReadingSession}
+        />
+      )}
+
+      {view === 'reading_session' && (
+        <ReadingSession
+          textId={currentTextId}
+          onBack={() => setView('reading_list')}
+          onComplete={() => setView('reading_list')}
         />
       )}
 

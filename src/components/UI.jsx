@@ -487,7 +487,338 @@ function SessionResults({ totalItems, correctItems, onComplete, sessionType = 'r
     );
 }
 
-export function Dashboard({ user, lessonsCount, reviewsCount, learnedCount, hskStats, onStart, onOpenSettings, onOpenLevel, onOpenLearnedItems }) {
+export function ReadingList({ onBack, onSelectText }) {
+    const [texts, setTexts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetch('/api/study?action=texts')
+            .then(res => res.json())
+            .then(data => {
+                setTexts(data);
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Chargement des textes...</div>;
+
+    return (
+        <div className="min-h-screen bg-slate-950 p-6 animate-in">
+            <div className="max-w-6xl mx-auto">
+                <div className="flex items-center justify-between mb-8">
+                    <button onClick={onBack} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors font-bold">
+                        <ArrowLeft size={20} /> Retour au Dashboard
+                    </button>
+                    <h1 className="text-3xl font-bold text-white">Lecture (Reading)</h1>
+                    <div className="w-32"></div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {texts.map(text => (
+                        <div key={text.id} onClick={() => onSelectText(text.id)} className="bg-slate-900 border border-slate-800 p-6 rounded-2xl hover:bg-slate-800 transition-all cursor-pointer group hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10">
+                            <div className="flex justify-between items-start mb-4">
+                                <span className="px-3 py-1 rounded bg-indigo-900/50 text-indigo-300 text-xs font-bold uppercase border border-indigo-500/20">HSK {text.level}</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">{text.title}</h3>
+                            <p className="text-slate-400 text-sm line-clamp-3">{text.description}</p>
+                            <div className="mt-6 flex items-center text-indigo-400 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                Commencer la lecture <ChevronRight size={16} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function ReadingSession({ textId, onComplete, onBack }) {
+    const [text, setText] = useState(null);
+    const [mode, setMode] = useState('study');
+    const [knownChars, setKnownChars] = useState(new Set());
+    const [quizAnswers, setQuizAnswers] = useState({});
+    const [showQuizResults, setShowQuizResults] = useState(false);
+    const [showTranslations, setShowTranslations] = useState(false);
+
+    const [selectedChar, setSelectedChar] = useState(null);
+    const [charDetails, setCharDetails] = useState({});
+    const [inputMeaning, setInputMeaning] = useState('');
+    const [inputStatus, setInputStatus] = useState('idle');
+
+    useEffect(() => {
+        fetch(`/api/study?action=text&id=${textId}`)
+            .then(res => res.json())
+            .then(data => {
+                setText(data);
+                const allChars = data.content.map(line => line.chinese).join('').replace(/[^\u4e00-\u9fa5]/g, '').split('');
+                const uniqueChars = [...new Set(allChars)];
+                fetch(`/api/study?action=chars_details&chars=${uniqueChars.join(',')}`)
+                    .then(res => res.json())
+                    .then(details => setCharDetails(details));
+            });
+    }, [textId]);
+
+    useEffect(() => {
+        setInputMeaning('');
+        setInputStatus('idle');
+    }, [selectedChar]);
+
+    if (!text) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Chargement du texte...</div>;
+
+    const allChars = text.content.map(line => line.chinese).join('').replace(/[^\u4e00-\u9fa5]/g, '').split('');
+    const uniqueChars = [...new Set(allChars)];
+
+    const handleCharClick = (char) => {
+        if (knownChars.has(char)) return;
+        setSelectedChar(char);
+    };
+
+    const handleInputSubmit = (e) => {
+        e.preventDefault();
+        if (!selectedChar || !charDetails[selectedChar]) return;
+
+        const details = charDetails[selectedChar];
+        const meanings = details.meaning || [];
+
+        const normalize = (str) => str.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const input = normalize(inputMeaning);
+
+        const isCorrect = meanings.some(m => normalize(m) === input);
+
+        if (isCorrect) {
+            setInputStatus('success');
+            const newKnown = new Set(knownChars);
+            newKnown.add(selectedChar);
+            setKnownChars(newKnown);
+            setTimeout(() => {
+                setSelectedChar(null);
+            }, 1000);
+        } else {
+            setInputStatus('error');
+        }
+    };
+
+    const handleQuizSubmit = () => {
+        setShowQuizResults(true);
+        setShowTranslations(true);
+    };
+
+    const correctAnswersCount = text.questions.reduce((acc, q) => {
+        return acc + (quizAnswers[q.id] === q.correctAnswer ? 1 : 0);
+    }, 0);
+
+    if (mode === 'results') {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 animate-in">
+                <div className="max-w-2xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center">
+                    <h2 className="text-3xl font-bold text-white mb-8">Session Terminée !</h2>
+
+                    <div className="grid grid-cols-2 gap-8 mb-12">
+                        <div className="bg-slate-800/50 p-6 rounded-2xl">
+                            <div className="text-slate-400 text-sm font-bold uppercase mb-2">Vocabulaire Connu</div>
+                            <div className="text-4xl font-black text-indigo-400">{Math.round((knownChars.size / uniqueChars.length) * 100)}%</div>
+                            <div className="text-slate-500 text-xs mt-1">{knownChars.size} / {uniqueChars.length} caractères</div>
+                        </div>
+                        <div className="bg-slate-800/50 p-6 rounded-2xl">
+                            <div className="text-slate-400 text-sm font-bold uppercase mb-2">Compréhension</div>
+                            <div className="text-4xl font-black text-emerald-400">{Math.round((correctAnswersCount / text.questions.length) * 100)}%</div>
+                            <div className="text-slate-500 text-xs mt-1">{correctAnswersCount} / {text.questions.length} correct</div>
+                        </div>
+                    </div>
+
+                    <button onClick={onComplete} className="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-indigo-500/20">
+                        Retour au menu
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-slate-950 flex flex-col animate-in">
+            {/* Header */}
+            <div className="bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-4 sticky top-0 z-50 flex justify-between items-center">
+                <button onClick={onBack} className="text-slate-400 hover:text-white transition-colors"><X size={24} /></button>
+                <div className="font-bold text-white">{text.title}</div>
+                <div className="w-6"></div>
+            </div>
+
+            <div className="flex-1 flex overflow-hidden">
+                {/* Main Content Area */}
+                <div className="flex-1 overflow-y-auto p-6 pb-24 custom-scrollbar">
+                    <div className="max-w-3xl mx-auto w-full">
+                        {mode === 'study' ? (
+                            <div className="space-y-8">
+                                <div className="bg-indigo-900/20 border border-indigo-500/20 p-6 rounded-2xl mb-8">
+                                    <h3 className="text-indigo-300 font-bold mb-2 flex items-center gap-2"><Brain size={18} /> Mode Étude</h3>
+                                    <p className="text-indigo-200/70 text-sm">Cliquez sur un caractère inconnu pour l'étudier. Entrez sa signification en français pour le valider.</p>
+                                </div>
+
+                                {text.content.map((line, idx) => (
+                                    <div key={idx} className="bg-slate-900/50 p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                                        <div className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">{line.speaker}</div>
+                                        <div className="text-2xl text-white font-serif mb-3 leading-relaxed">
+                                            {line.chinese.split('').map((char, charIdx) => {
+                                                const isChinese = /[\u4e00-\u9fa5]/.test(char);
+                                                const isKnown = knownChars.has(char);
+                                                const isSelected = selectedChar === char;
+
+                                                return isChinese ? (
+                                                    <span
+                                                        key={charIdx}
+                                                        onClick={() => handleCharClick(char)}
+                                                        className={`cursor-pointer transition-all duration-200 px-0.5 rounded
+                                                            ${isKnown ? 'text-green-400' : 'text-white hover:text-indigo-300'}
+                                                            ${isSelected ? 'bg-indigo-500/30 text-indigo-300' : ''}
+                                                        `}
+                                                    >
+                                                        {char}
+                                                    </span>
+                                                ) : <span key={charIdx}>{char}</span>;
+                                            })}
+                                        </div>
+                                        <div className="text-slate-400 text-sm font-mono mb-1">{line.pinyin}</div>
+                                        {showTranslations && (
+                                            <div className="text-slate-500 text-sm italic animate-in fade-in slide-in-from-top-1">{line.meaning}</div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="space-y-8">
+                                <div className="bg-emerald-900/20 border border-emerald-500/20 p-6 rounded-2xl mb-8">
+                                    <h3 className="text-emerald-300 font-bold mb-2 flex items-center gap-2"><Check size={18} /> Quiz de Compréhension</h3>
+                                    <p className="text-emerald-200/70 text-sm">Répondez aux questions pour vérifier votre compréhension et débloquer les traductions.</p>
+                                </div>
+
+                                {text.questions.map((q, idx) => (
+                                    <div key={q.id} className="bg-slate-900 p-6 rounded-2xl border border-white/5">
+                                        <h4 className="text-lg font-bold text-white mb-4">{idx + 1}. {q.question}</h4>
+                                        <div className="space-y-3">
+                                            {q.options.map((opt, optIdx) => {
+                                                const isSelected = quizAnswers[q.id] === optIdx;
+                                                const isCorrect = q.correctAnswer === optIdx;
+
+                                                let btnClass = "w-full text-left p-4 rounded-xl border transition-all font-medium ";
+                                                if (showQuizResults) {
+                                                    if (isCorrect) btnClass += "bg-green-900/30 border-green-500/50 text-green-300";
+                                                    else if (isSelected) btnClass += "bg-red-900/30 border-red-500/50 text-red-300";
+                                                    else btnClass += "bg-slate-800/50 border-slate-700 text-slate-400 opacity-50";
+                                                } else {
+                                                    if (isSelected) btnClass += "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20";
+                                                    else btnClass += "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:border-slate-600";
+                                                }
+
+                                                return (
+                                                    <button
+                                                        key={optIdx}
+                                                        onClick={() => !showQuizResults && setQuizAnswers(prev => ({ ...prev, [q.id]: optIdx }))}
+                                                        disabled={showQuizResults}
+                                                        className={btnClass}
+                                                    >
+                                                        {opt}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sidebar for Character Study */}
+                {selectedChar && (
+                    <div className="w-80 bg-slate-900 border-l border-white/10 p-6 flex flex-col shadow-2xl animate-in slide-in-from-right">
+                        <div className="flex justify-between items-start mb-8">
+                            <h3 className="text-slate-400 text-xs font-bold uppercase tracking-widest">Étude de caractère</h3>
+                            <button onClick={() => setSelectedChar(null)} className="text-slate-500 hover:text-white"><X size={20} /></button>
+                        </div>
+
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="text-8xl font-serif text-white mb-4 drop-shadow-lg">{selectedChar}</div>
+                            <div className="text-2xl text-slate-400 font-mono">{charDetails[selectedChar]?.pinyin || '...'}</div>
+                        </div>
+
+                        <form onSubmit={handleInputSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-slate-400 text-xs font-bold uppercase mb-2">Signification (Français)</label>
+                                <input
+                                    type="text"
+                                    value={inputMeaning}
+                                    onChange={(e) => { setInputMeaning(e.target.value); setInputStatus('idle'); }}
+                                    className={`w-full bg-slate-800 border rounded-xl px-4 py-3 text-white outline-none transition-all
+                                        ${inputStatus === 'error' ? 'border-red-500 focus:border-red-500' :
+                                            inputStatus === 'success' ? 'border-green-500 focus:border-green-500' :
+                                                'border-slate-700 focus:border-indigo-500'}
+                                    `}
+                                    placeholder="Entrez le sens..."
+                                    autoFocus
+                                />
+                                {inputStatus === 'error' && <p className="text-red-400 text-xs mt-2">Ce n'est pas tout à fait ça. Essayez encore !</p>}
+                                {inputStatus === 'success' && <p className="text-green-400 text-xs mt-2 font-bold">Correct !</p>}
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-indigo-500/20"
+                            >
+                                Valider
+                            </button>
+                        </form>
+                    </div>
+                )}
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-900/90 backdrop-blur-xl border-t border-white/10 p-4 flex justify-between items-center z-50">
+                <div className="text-slate-400 text-sm font-bold">
+                    {mode === 'study' ? (
+                        <span>{knownChars.size} / {uniqueChars.length} caractères connus</span>
+                    ) : (
+                        <span>{Object.keys(quizAnswers).length} / {text.questions.length} questions répondues</span>
+                    )}
+                </div>
+
+                {mode === 'study' ? (
+                    <button
+                        onClick={() => setMode('quiz')}
+                        className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                    >
+                        Passer au Quiz <ChevronRight size={20} />
+                    </button>
+                ) : (
+                    !showQuizResults ? (
+                        <button
+                            onClick={handleQuizSubmit}
+                            disabled={Object.keys(quizAnswers).length < text.questions.length}
+                            className="bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Vérifier les réponses
+                        </button>
+                    ) : (
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setMode('study')}
+                                className="bg-slate-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-700 transition-colors"
+                            >
+                                Retour au texte (Traductions débloquées)
+                            </button>
+                            <button
+                                onClick={() => setMode('results')}
+                                className="bg-white text-slate-900 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                            >
+                                Voir les résultats <ChevronRight size={20} />
+                            </button>
+                        </div>
+                    )
+                )}
+            </div>
+        </div>
+    );
+}
+
+export function Dashboard({ user, lessonsCount, reviewsCount, learnedCount, hskStats, onStart, onOpenSettings, onOpenLevel, onOpenLearnedItems, onOpenReading }) {
     const userFaction = user.faction ? FACTIONS[user.faction] : null;
     const HSKCard = ({ level, stats, icon, colorClass, bgClass }) => {
         const isLocked = stats.locked;
@@ -560,6 +891,11 @@ export function Dashboard({ user, lessonsCount, reviewsCount, learnedCount, hskS
                         <div className="relative z-10"><div className="flex justify-between items-start"><span className="block text-xl font-bold text-emerald-100 uppercase tracking-widest bg-emerald-900/50 px-3 py-1 rounded-lg w-fit">Leçons apprises</span></div><span className="block text-7xl font-black text-white mt-4 drop-shadow-lg">{learnedCount}</span></div>
                         <div className="relative z-10">{learnedCount > 0 ? <span className="text-sm font-medium text-emerald-200 bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">Caractères appris</span> : <span className="text-sm text-slate-400">Aucun caractère appris.</span>}</div>
                         <Trophy size={180} className="absolute -bottom-8 -right-8 p-4 opacity-10 group-hover:opacity-25 transition-all transform group-hover:scale-110 text-white" />
+                    </button>
+                    <button onClick={onOpenReading} className="group relative overflow-hidden p-8 rounded-3xl border transition-all text-left shadow-2xl h-64 flex flex-col justify-between bg-gradient-to-br from-amber-600 to-orange-900 border-amber-400/30 hover:scale-[1.02] cursor-pointer hover:shadow-amber-500/30 md:col-span-3">
+                        <div className="relative z-10"><div className="flex justify-between items-start"><span className="block text-xl font-bold text-amber-100 uppercase tracking-widest bg-amber-900/50 px-3 py-1 rounded-lg w-fit">Lecture</span></div><span className="block text-4xl font-black text-white mt-4 drop-shadow-lg leading-tight">Textes &<br />Histoires</span></div>
+                        <div className="relative z-10"><span className="text-sm font-medium text-amber-200 bg-black/20 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">Améliorer la compréhension</span></div>
+                        <BookOpen size={180} className="absolute -bottom-8 -right-8 p-4 opacity-10 group-hover:opacity-25 transition-all transform group-hover:rotate-6 text-white" />
                     </button>
                 </div>
                 <h3 className="text-slate-400 font-bold uppercase tracking-widest text-sm mt-8 mb-4">Progression HSK</h3>
@@ -664,6 +1000,17 @@ export function ReviewSession({ items, onComplete, isPractice = false }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (status === 'error') {
+            if (index < shuffledItems.length - 1) {
+                setIndex(index + 1);
+                setStatus('idle');
+            } else {
+                setShowResults(true);
+            }
+            return;
+        }
+
         const normInput = input.trim().toLowerCase();
 
         if (!normInput) return;

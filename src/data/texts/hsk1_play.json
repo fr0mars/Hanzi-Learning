@@ -1,0 +1,418 @@
+[
+    {
+        "id": "hsk1_play",
+        "title": "Do you have time to play?",
+        "level": 1,
+        "description": "Learn how to ask if someone has time, or if someone is busy. Great for making plans.",
+        "content": [
+            {
+                "speaker": "小明",
+                "chinese": "小红，你最近忙不忙？",
+                "pinyin": "Xiǎohóng, nǐ zuìjìn máng bù máng?",
+                "meaning": "Xiaohong, are you busy recently?"
+            },
+            {
+                "speaker": "小红",
+                "chinese": "和平时一样，不怎么忙，怎么了？",
+                "pinyin": "Hé píngshí yīyàng, bù zěnme máng, zěnme le?",
+                "meaning": "Same as usual, not very busy, why?"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "我最近开始喜欢打乒乓球，想找你一起打。",
+                "pinyin": "Wǒ zuìjìn kāishǐ xǐhuān dǎ pīngpāngqiú, xiǎng zhǎo nǐ yīqǐ dǎ.",
+                "meaning": "I recently started to like playing table tennis, I want to ask you to play together."
+            },
+            {
+                "speaker": "小红",
+                "chinese": "周六下午我有空，但还不会打乒乓球。",
+                "pinyin": "Zhōuliù xiàwǔ wǒ yǒu kòng, dàn hái bù huì dǎ pīngpāngqiú.",
+                "meaning": "I am free on Saturday afternoon, but I don't know how to play table tennis yet."
+            },
+            {
+                "speaker": "小明",
+                "chinese": "没关系，我可以教你。",
+                "pinyin": "Méi guānxi, wǒ kěyǐ jiāo nǐ.",
+                "meaning": "It doesn't matter, I can teach you."
+            }
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "小明最近喜欢干什么？",
+                "options": [
+                    "写书法",
+                    "打篮球",
+                    "画画",
+                    "打乒乓"
+                ],
+                "correctAnswer": 3
+            },
+            {
+                "id": 2,
+                "question": "小红什么时候有空？",
+                "options": [
+                    "周六早上",
+                    "周六晚上",
+                    "周六下午",
+                    "周六中午"
+                ],
+                "correctAnswer": 2
+            }
+        ]
+    },
+    {
+        "id": "hsk1_father_job",
+        "title": "What does your father do?",
+        "level": 1,
+        "description": "This Mandarin dialogue contains key sentence structures you’ll repeatedly hear in Chinese conversations. Remember to review articles often. It’s the secret to becoming fluent!",
+        "content": [
+            {
+                "speaker": "小明",
+                "chinese": "我爸爸昨天才回到家，他从新加坡给我带了礼物。",
+                "pinyin": "Wǒ bàba zuótiān cái huídào jiā, tā cóng Xīnjiāpō gěi wǒ dài le lǐwù.",
+                "meaning": "My dad just came home yesterday, he brought me a gift from Singapore."
+            },
+            {
+                "speaker": "小红",
+                "chinese": "为什么你爸爸前几天不在家？",
+                "pinyin": "Wèishéme nǐ bàba qián jǐ tiān bù zài jiā?",
+                "meaning": "Why was your dad not at home the last few days?"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "因为他出差了。",
+                "pinyin": "Yīnwèi tā chūchāi le.",
+                "meaning": "Because he was on a business trip."
+            },
+            {
+                "speaker": "小红",
+                "chinese": "你爸爸是干什么的？",
+                "pinyin": "Nǐ bàba shì gànshénme de?",
+                "meaning": "What does your father do?"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "他是一个公司的经理，经常不在家。",
+                "pinyin": "Tā shì yī gè gōngsī de jīnglǐ, jīngcháng bù zài jiā.",
+                "meaning": "He is a company manager, he is often not at home."
+            }
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "小明的爸爸什么时候回到家的？",
+                "options": [
+                    "前天",
+                    "前两天",
+                    "昨天",
+                    "今天"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "id": 2,
+                "question": "小明的爸爸是干什么的？",
+                "options": [
+                    "厨师",
+                    "老师",
+                    "司机",
+                    "经理"
+                ],
+                "correctAnswer": 3
+            }
+        ]
+    },
+    {
+        "id": "hsk1_future_job",
+        "title": "What job do you want?",
+        "level": 1,
+        "description": "A HSK 1 Mandarin dialogue discussing what you want to become once you are older.",
+        "content": [
+            {
+                "speaker": "小明",
+                "chinese": "你以后想干什么？",
+                "pinyin": "Nǐ yǐhòu xiǎng gànshénme?",
+                "meaning": "What do you want to do in the future?"
+            },
+            {
+                "speaker": "小红",
+                "chinese": "老师，我喜欢小孩儿，你呢？",
+                "pinyin": "Lǎoshī, wǒ xǐhuān xiǎoháir, nǐ ne?",
+                "meaning": "A teacher, I like children, and you?"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "我想当画家，可是我的妈妈不同意。",
+                "pinyin": "Wǒ xiǎng dāng huàjiā, kěshì wǒ de māma bù tóngyì.",
+                "meaning": "I want to be a painter, but my mom doesn't agree."
+            },
+            {
+                "speaker": "小红",
+                "chinese": "为什么她不同意？",
+                "pinyin": "Wèishéme tā bù tóngyì?",
+                "meaning": "Why doesn't she agree?"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "她说当画家没钱，她希望我当商人。",
+                "pinyin": "Tā shuō dāng huàjiā méi qián, tā xīwàng wǒ dāng shāngrén.",
+                "meaning": "She says being a painter has no money, she hopes I become a businessman."
+            }
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "小红为什么想当老师？",
+                "options": [
+                    "钱多",
+                    "工作少",
+                    "喜欢小孩儿",
+                    "不太忙"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "id": 2,
+                "question": "为什么小明的妈妈不同意他当画家？",
+                "options": [
+                    "钱多",
+                    "不太忙",
+                    "钱少",
+                    "太忙"
+                ],
+                "correctAnswer": 2
+            }
+        ]
+    },
+    {
+        "id": "hsk1_home_day",
+        "title": "Home for a day",
+        "level": 1,
+        "description": "A Chinese dialogue about heading home for a day. The dialogue continues at HSK 2 and HSK 3 level. The conversation has an informal tone.",
+        "content": [
+            {
+                "speaker": "妈妈",
+                "chinese": "你回来了，我好想你！真开心啊。",
+                "pinyin": "Nǐ huílái le, wǒ hǎo xiǎng nǐ! Zhēn kāixīn a.",
+                "meaning": "You're back, I missed you so much! I'm so happy."
+            },
+            {
+                "speaker": "我",
+                "chinese": "是啊妈妈，我也很想你。",
+                "pinyin": "Shì a māma, wǒ yě hěn xiǎng nǐ.",
+                "meaning": "Yes mom, I missed you too."
+            },
+            {
+                "speaker": "妈妈",
+                "chinese": "你想吃什么？我去给你做饭。",
+                "pinyin": "Nǐ xiǎng chī shénme? Wǒ qù gěi nǐ zuòfàn.",
+                "meaning": "What do you want to eat? I'll go cook for you."
+            },
+            {
+                "speaker": "我",
+                "chinese": "都可以，妈妈做的我都爱吃。妈妈，房间脏了，我扫一下地。",
+                "pinyin": "Dōu kěyǐ, māma zuò de wǒ dōu ài chī. Māma, fángjiān zāng le, wǒ sǎo yīxià dì.",
+                "meaning": "Anything is fine, I love everything mom cooks. Mom, the room is dirty, I'll sweep the floor."
+            },
+            {
+                "speaker": "妈妈",
+                "chinese": "你刚回家，太累了，不用扫地，快去休息吧。",
+                "pinyin": "Nǐ gāng huíjiā, tài lèi le, bùyòng sǎodì, kuài qù xiūxi ba.",
+                "meaning": "You just got home, you're too tired, no need to sweep, go rest quickly."
+            }
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "回家的第一天，妈妈觉得怎么样？",
+                "options": [
+                    "开心",
+                    "不开心",
+                    "生气",
+                    "难过"
+                ],
+                "correctAnswer": 0
+            },
+            {
+                "id": 2,
+                "question": "妈妈让我做什么？",
+                "options": [
+                    "做饭",
+                    "扫地",
+                    "休息",
+                    "打游戏"
+                ],
+                "correctAnswer": 2
+            }
+        ]
+    },
+    {
+        "id": "hsk1_baidu",
+        "title": "Baidu",
+        "level": 1,
+        "description": "A short Chinese article about Baidu. It is China’s most popular search engine.",
+        "content": [
+            {
+                "speaker": "Narrator",
+                "chinese": "“百度”是中国人最经常用的软件。百度，和谷歌差不多，可以用来提问，找图片，找视频等等。",
+                "pinyin": "“Bǎidù” shì Zhōngguórén zuì jīngcháng yòng de ruǎnjiàn. Bǎidù, hé Gǔgē chàbùduō, kěyǐ yònglái tíwèn, zhǎo túpiàn, zhǎo shìpín děngděng.",
+                "meaning": "“Baidu” is the software Chinese people use most often. Baidu is similar to Google, it can be used to ask questions, find pictures, find videos, etc."
+            },
+            {
+                "speaker": "Narrator",
+                "chinese": "我们常常说“百度一下，你就知道”，意思是，你有什么不懂的，在百度上都可以找到答案。",
+                "pinyin": "Wǒmen chángcháng shuō “Bǎidù yīxià, nǐ jiù zhīdào”, yìsi shì, nǐ yǒu shénme bù dǒng de, zài Bǎidù shàng dōu kěyǐ zhǎodào dá'àn.",
+                "meaning": "We often say “Baidu it, and you'll know”, meaning if there's something you don't understand, you can find the answer on Baidu."
+            }
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "“百度”是什么东西？",
+                "options": [
+                    "足球",
+                    "软件",
+                    "人",
+                    "动物"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "id": 2,
+                "question": "百度不可以用来干什么？",
+                "options": [
+                    "回答",
+                    "打架",
+                    "找图片",
+                    "找视频"
+                ],
+                "correctAnswer": 1
+            }
+        ]
+    },
+    {
+        "id": "hsk1_park",
+        "title": "Let’s go to the park",
+        "level": 1,
+        "description": "A Chinese dialogue about going to the park (公园). This conversation continues at a HSK 2 level.",
+        "content": [
+            {
+                "speaker": "小明",
+                "chinese": "小红，你星期六想去玩儿吗？还是你想在学校学习？",
+                "pinyin": "Xiǎohóng, nǐ xīngqīliù xiǎng qù wánr ma? Háishì nǐ xiǎng zài xuéxiào xuéxí?",
+                "meaning": "Xiaohong, do you want to go play on Saturday? Or do you want to study at school?"
+            },
+            {
+                "speaker": "小红",
+                "chinese": "你想去哪里？",
+                "pinyin": "Nǐ xiǎng qù nǎlǐ?",
+                "meaning": "Where do you want to go?"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "星期六我们去公园吧，夏天来了，我们可以去游泳。",
+                "pinyin": "Xīngqīliù wǒmen qù gōngyuán ba, xiàtiān lái le, wǒmen kěyǐ qù yóuyǒng.",
+                "meaning": "Let's go to the park on Saturday, summer is here, we can go swimming."
+            },
+            {
+                "speaker": "小红",
+                "chinese": "好啊！",
+                "pinyin": "Hǎo a!",
+                "meaning": "Okay!"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "那星期六早上九点，我在学校门口等你。",
+                "pinyin": "Nà xīngqīliù zǎoshang jiǔ diǎn, wǒ zài xuéxiào ménkǒu děng nǐ.",
+                "meaning": "Then Saturday morning at 9 o'clock, I'll wait for you at the school gate."
+            }
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "小明想去哪里玩？",
+                "options": [
+                    "学校",
+                    "公园",
+                    "加拿大",
+                    "商店"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "id": 2,
+                "question": "他们什么时候去玩？",
+                "options": [
+                    "早上八点",
+                    "晚上九点",
+                    "早上六点",
+                    "早上九点"
+                ],
+                "correctAnswer": 3
+            }
+        ]
+    },
+    {
+        "id": "hsk1_where_from",
+        "title": "Where do you come from?",
+        "level": 1,
+        "description": "One of the most common questions you will hear travelling around China is “Where are you from?” This might be “你是哪国人?” or “你来自哪里?”. Both are asking where you come from.",
+        "content": [
+            {
+                "speaker": "小明",
+                "chinese": "小红，你是英国人吗？",
+                "pinyin": "Xiǎohóng, nǐ shì Yīngguórén ma?",
+                "meaning": "Xiaohong, are you British?"
+            },
+            {
+                "speaker": "小红",
+                "chinese": "我不是，我是美国人，你呢？",
+                "pinyin": "Wǒ bù shì, wǒ shì Měiguórén, nǐ ne?",
+                "meaning": "I am not, I am American, and you?"
+            },
+            {
+                "speaker": "小明",
+                "chinese": "我是加拿大人，我爸爸是中国人，我妈妈是加拿大人。",
+                "pinyin": "Wǒ shì Jiānádàrén, wǒ bàba shì Zhōngguórén, wǒ māma shì Jiānádàrén.",
+                "meaning": "I am Canadian, my dad is Chinese, my mom is Canadian."
+            },
+            {
+                "speaker": "小红",
+                "chinese": "哦，我们班也有一个加拿大人。",
+                "pinyin": "Ò, wǒmen bān yěyǒu yī gè Jiānádàrén.",
+                "meaning": "Oh, our class also has a Canadian."
+            },
+            {
+                "speaker": "小明",
+                "chinese": "是吗？那下次我去找他玩儿。",
+                "pinyin": "Shì ma? Nà xiàcì wǒ qù zhǎo tā wánr.",
+                "meaning": "Really? Then next time I'll go find him to play."
+            }
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "小红是哪国人？",
+                "options": [
+                    "英国",
+                    "中国",
+                    "美国",
+                    "加拿大"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "id": 2,
+                "question": "小明是哪国人？",
+                "options": [
+                    "英国",
+                    "中国",
+                    "美国",
+                    "加拿大"
+                ],
+                "correctAnswer": 3
+            }
+        ]
+    }
+]
